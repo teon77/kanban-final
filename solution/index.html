@@ -1,13 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="./index.js" defer></script>
     <link rel="stylesheet" href="./styles.css" />
-    <title>Tasks manager</title>
-</head>
-<body>
-</body>
+    <title>Eithan's Tasks manager</title>
+  </head>
+  <body>
+    <h1 id="page-title">Task Manager</h1>
+    <br />
+    <input type="text" id="search" placeholder="Search Here" />
+    <div id="container">
+      <section id="do-section">
+        <ul id="toDoList" class="to-do-tasks" style="list-style-type: none">
+          To Do
+        </ul>
+        <input type="text" id="add-to-do-task" placeholder="Add To-Do Task" />
+        <button id="submit-add-to-do">Add</button>
+      </section>
+      <section id="progress-section">
+        <ul
+          id="progressList"
+          class="in-progress-tasks"
+          style="list-style-type: none"
+        >
+          In Progress
+        </ul>
+        <input
+          type="text"
+          id="add-in-progress-task"
+          placeholder="Add In-Progress Task"
+        />
+        <button id="submit-add-in-progress">Add</button>
+      </section>
+      <section id="done-section">
+        <ul id="doneList" class="done-tasks" style="list-style-type: none">
+          Done
+        </ul>
+        <input type="text" id="add-done-task" placeholder="Add Done Task" />
+        <button id="submit-add-done">Add</button>
+      </section>
+    </div>
+  </body>
 </html>
