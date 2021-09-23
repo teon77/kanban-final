@@ -1,12 +1,90 @@
-let inputtedText, list;
+
+    /* Global Variables */
+
+let inputtedText, list, originalText, chosenTask, removedTask, currentList, newList;
+let pressedKeys = {
+    Alt: false,
+    "1": false,
+    "2": false,
+    "3": false,
+  };
+
+let todo = document.getElementById("toDoList");
+let progress = document.getElementById("progressList");
+let done = document.getElementById("doneList");
+
+
+
 let tasksStorage = JSON.parse(localStorage.getItem("tasks"));
 
+    /* The function to start the show */
+initialFromLocalStorage();
 
-/*localStorage.setItem("tasks",JSON.stringify({
-  "todo": [],
-  "in-progress": [],
-  "done": []
-}));
+function initialFromLocalStorage(){
+    if(tasksStorage!==null)
+        displayFromStorage();
+    else {
+        setStorageArrays();
+    }
+ }
+
+ 
+
+
+function setStorageArrays(){
+    localStorage.setItem("tasks",JSON.stringify({
+        "todo": [],
+        "in-progress": [],
+        "done": []
+      }));
+       tasksStorage = JSON.parse(localStorage.getItem("tasks"));
+ }
+
+ 
+ function getOriginalText(e){
+    if(e.target.tagName!=="LI") return;
+    originalText = e.target.innerText;
+    console.log(originalText);
+ }
+
+
+function handleTaskContentEdit(e){
+    if(e.target.tagName!=="LI") return;
+    let newText = e.target.innerText;
+     
+        if((e.target.closest("#toDoList"))){
+            let index = tasksStorage.todo.indexOf(originalText);
+
+            console.log(index);
+            if(index === (-1)) return;
+            tasksStorage.todo[index] = newText;
+
+            updateStorage();
+             return;
+        }
+        if((e.target.closest("#progressList"))){
+            let index = tasksStorage["in-progress"].indexOf(originalText)
+
+            if(index === (-1)) return;
+            tasksStorage["in-progress"].splice(index, 1, newText);
+
+            updateStorage();
+             return;
+        }
+        if((e.target.closest("#doneList"))){
+            let index = tasksStorage.done.indexOf(originalText);
+
+            if(index === (-1)) return;
+             tasksStorage.done.splice(index, 1, newText);
+
+             updateStorage(); return;
+        }
+}
+
+
+
+
+
 
 
         /* handle button clicks with event delegation */
@@ -17,7 +95,7 @@ function handleAddTaskEvent(e) {
 
                         /* Getting and checking input */
         inputtedText = document.getElementById("add-to-do-task").value;
-            if(inputtedText===""){ alert("please insert Some text"); return;}
+        if(inputtedText===""){ alert("please insert Some text"); return;}
 
                             /*Getting the right list */
              list = document.querySelector(".to-do-tasks");
@@ -50,33 +128,28 @@ function handleAddTaskEvent(e) {
         const newId = generateId();
         addTask( newId, inputtedText, list);       // adding task with the right list and text
         }
- 
+ return;
 }
 
-
-
-function handleEditTaskEvent(e){
-        console.log(e.target.id)
-}
 
 function addTask(id, userText, list) {
         /* Creating new task element */
-    const newTask = createTaskElement( id,userText) ;        
+    const newTask = createTaskElement(id, userText) ;        
          
     
           /* Appending to the right list */
-    list.append(newTask);
+    list.prepend(newTask);
 
         /*  Adding to local storage */
        switch(list.id){
         case "toDoList":
-           tasksStorage.todo.push(userText);
+           tasksStorage.todo.unshift(userText);
             break;
         case "progressList":
-            tasksStorage["in-progress"].push( userText);
+            tasksStorage["in-progress"].unshift(userText);
             break;
         case "doneList":
-            tasksStorage.done.push(userText);
+            tasksStorage.done.unshift(userText);
             break;
         default:
         console.log("Sorry");
@@ -89,7 +162,7 @@ function addTask(id, userText, list) {
 
 function createTaskElement(id, taskText){
     const classes = ["task"];
-    const attrs = {id: id};
+    const attrs = {id: id, contenteditable: "true"};
     return createElement("li", taskText, classes, attrs);
 }
 
@@ -115,6 +188,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
   }
 
 
+
    function updateStorage(){
     localStorage.setItem("tasks", JSON.stringify(tasksStorage));
   }
@@ -131,21 +205,17 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
     }
     if(document.getElementById(`${count}`)!==null) return count +1;
     return count;
-}catch{
+
+    }
+    catch{
     return count;
-}
+    }
     
   }
           
       
     
-
-
-
 function displayFromStorage(){
-    let todo = document.getElementById("toDoList");
-    let progress = document.getElementById("progressList");
-    let done = document.getElementById("doneList");
     let count = 0;
         for(let i = 0; i < tasksStorage.todo.length; i++){       // in each array
               todo.append(createTaskElement(count, tasksStorage.todo[i]));
@@ -162,11 +232,143 @@ function displayFromStorage(){
             count++;
         }
       }
-  
-  
-  displayFromStorage();
 
-    /* event listeners with event delegation */
-  document.getElementById("container").addEventListener("click", handleAddTaskEvent);
-  document.getElementById("container").addEventListener("dblclick", handleEditTaskEvent);
-  /* */
+      /* gets a ul list ID and returning the right array name from tasksStorage */
+      function parentList(str){
+        switch(str){
+            case "toDoList":
+              return "todo"
+                
+            case "progressList":
+               return "in-progress"
+                
+            case "doneList":
+               return "done"
+
+            default:
+            console.log("There Seems To Be A Problem");
+           }
+      }
+  
+
+
+                /* event listeners with event delegation */
+    const container = document.getElementById("container");
+
+          container.addEventListener("click", handleAddTaskEvent);
+
+          document.addEventListener('focus', getOriginalText, true);
+          document.addEventListener('blur', handleTaskContentEdit, true);
+
+
+
+
+                 /* ---- moving Tasks with keyboard ---- */
+          
+
+ 
+            /*  called from keydown event */
+
+    function moveToList(event){
+
+                /* assigning new values */
+    if (event.key === "Alt") {
+              pressedKeys.Alt = true;
+        }
+    if (event.key === "1") {
+              pressedKeys["1"] = true;
+        }
+    if (event.key === "2") {
+                pressedKeys["2"] = true;
+        }
+    if (event.key === "3") {
+                pressedKeys["3"] = true;
+        }
+
+              
+        if(pressedKeys.Alt && pressedKeys["1"]){         // if Alt + 1 is pressed
+
+            currentList = parentList(chosenTask.parentElement.id);   // understand from which list an element is moving
+            taskContent = chosenTask.textContent;
+    
+                            /* Replacing in local Storage */  
+            removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
+            tasksStorage.todo.unshift(removedTask[0]);
+
+
+            todo.prepend(chosenTask);    //  replacing in DOM
+            updateStorage();
+            return;
+          }
+
+        if(pressedKeys.Alt && pressedKeys["2"]){         // if Alt + 2 is pressed
+
+
+            currentList = parentList(chosenTask.parentElement.id);   // understand from which list an element is moving
+            taskContent = chosenTask.textContent;
+
+                          /* Replacing in local Storage*/
+            removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
+            tasksStorage["in-progress"].unshift(removedTask[0]);
+
+
+            progress.prepend(chosenTask);  //  replacing in DOM
+            updateStorage(); 
+            return;
+          }
+
+        if(pressedKeys.Alt && pressedKeys["3"]){            // if Alt + 3 is pressed
+
+
+            currentList = parentList(chosenTask.parentElement.id);   // understand from which list an element is moving
+            taskContent = chosenTask.textContent;
+
+                 /* Replacing in local Storage*/
+            removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
+            tasksStorage.done.unshift(removedTask[0]);
+            
+                
+            done.prepend(chosenTask);  //  replacing in DOM
+            updateStorage()
+            return;
+          }
+        }
+          
+          
+         
+                    /* called from keyup event */
+            function settingPressedKeys(event){
+
+            if (event.key === "Alt") {
+              pressedKeys.Alt = false;
+            }
+            if (event.key === "1") {
+              pressedKeys["1"] = false;
+            }
+            if (event.key === "2") {
+                pressedKeys["2"] = false;
+            }
+            if (event.key === "3") {
+                pressedKeys["3"] = false;
+            }
+              return;
+        }
+         
+                            /*  detecting mouse hovering */
+        document.addEventListener(("mouseover"), function(event) {
+            if(event.target.tagName==="LI"){        // if the mouse hovers a task allow it to change location
+                chosenTask = event.target;              
+                document.addEventListener("keydown", moveToList);
+                document.addEventListener("keyup", settingPressedKeys);
+            }
+            else {
+                chosenTask = undefined;
+                document.removeEventListener("keyup", settingPressedKeys);
+                document.removeEventListener("keydown", moveToList);
+            }
+            return; 
+        
+            }, true); 
+
+
+            
