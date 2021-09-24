@@ -1,20 +1,24 @@
 
     /* Global Variables */
 
-let inputtedText, list, originalText, chosenTask, removedTask, currentList, newList;
-let pressedKeys = {
+let inputtedText, list, originalText, chosenTask, removedTask, currentList, newList,
+ pressedKeys = {
     Alt: false,
     "1": false,
     "2": false,
     "3": false,
   };
 
-let todo = document.getElementById("toDoList");
-let progress = document.getElementById("progressList");
-let done = document.getElementById("doneList");
+  /* ul lists from DOM */
+const todo = document.getElementById("toDoList");
+const progress = document.getElementById("progressList");
+const done = document.getElementById("doneList");
+const container = document.getElementById("container");
+const searchBar = document.getElementById("search");  
+let tasksArr = [];
 
 
-
+            /* Object to manipulate local storage*/
 let tasksStorage = JSON.parse(localStorage.getItem("tasks"));
 
     /* The function to start the show */
@@ -28,9 +32,30 @@ function initialFromLocalStorage(){
     }
  }
 
- 
+
+ function displayFromStorage(){
+    let count = 0;
+        for(let i = 0; i < tasksStorage.todo.length; i++){       // in each array
+              tasksArr.push(tasksStorage.todo[i]);          // use in searchBar
+              todo.append(createTaskElement(count, tasksStorage.todo[i]));
+              count++;
+          }
+
+         for(let i = 0; i < tasksStorage["in-progress"].length; i++){       // in each array
+            tasksArr.push(tasksStorage["in-progress"][i]);      // use in searchBar
+            progress.append(createTaskElement(count, tasksStorage["in-progress"][i]));
+            count++; 
+        }
+
+        for(let i = 0; i < tasksStorage.done.length; i++){       // in each array
+            tasksArr.push(tasksStorage.done[i]);    // use in searchBar
+            done.append(createTaskElement(count, tasksStorage.done[i]));
+            count++;
+        }
+      }
 
 
+    /* called if local storage is empty */
 function setStorageArrays(){
     localStorage.setItem("tasks",JSON.stringify({
         "todo": [],
@@ -40,29 +65,32 @@ function setStorageArrays(){
        tasksStorage = JSON.parse(localStorage.getItem("tasks"));
  }
 
- 
+ /* use in edit task content. gets the text before change */
  function getOriginalText(e){
     if(e.target.tagName!=="LI") return;
-    originalText = e.target.innerText;
-    console.log(originalText);
+    originalText = e.target.innerText;   // The text before change
  }
 
 
 function handleTaskContentEdit(e){
-    if(e.target.tagName!=="LI") return;
+    if(e.target.tagName!=="LI") return;     // if its not an li do nothing
     let newText = e.target.innerText;
      
-        if((e.target.closest("#toDoList"))){
+        if((e.target.closest("#toDoList"))){        // check which list
+
+            /* replacing in local storage */
             let index = tasksStorage.todo.indexOf(originalText);
 
-            console.log(index);
             if(index === (-1)) return;
             tasksStorage.todo[index] = newText;
 
             updateStorage();
              return;
         }
-        if((e.target.closest("#progressList"))){
+
+        if((e.target.closest("#progressList"))){     // check which list
+
+             /* replacing in local storage */
             let index = tasksStorage["in-progress"].indexOf(originalText)
 
             if(index === (-1)) return;
@@ -71,7 +99,10 @@ function handleTaskContentEdit(e){
             updateStorage();
              return;
         }
-        if((e.target.closest("#doneList"))){
+
+        if((e.target.closest("#doneList"))){    // check which list
+
+             /* replacing in local storage */
             let index = tasksStorage.done.indexOf(originalText);
 
             if(index === (-1)) return;
@@ -82,11 +113,6 @@ function handleTaskContentEdit(e){
 }
 
 
-
-
-
-
-
         /* handle button clicks with event delegation */
 
 function handleAddTaskEvent(e) {
@@ -95,6 +121,7 @@ function handleAddTaskEvent(e) {
 
                         /* Getting and checking input */
         inputtedText = document.getElementById("add-to-do-task").value;
+        tasksArr.push(inputtedText);
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
                             /*Getting the right list */
@@ -109,6 +136,7 @@ function handleAddTaskEvent(e) {
 
                           /* Getting and checking input */
         inputtedText = document.getElementById("add-in-progress-task").value;
+        tasksArr.push(inputtedText);
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
                      /*Getting the right list */
@@ -121,6 +149,7 @@ function handleAddTaskEvent(e) {
     if(e.target.id === "submit-add-done"){
                       /* Getting and checking input */
         inputtedText = document.getElementById("add-done-task").value;
+        tasksArr.push(inputtedText);
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
                      /*Getting the right list */
@@ -159,16 +188,14 @@ function addTask(id, userText, list) {
 }
 
 
-
 function createTaskElement(id, taskText){
     const classes = ["task"];
     const attrs = {id: id, contenteditable: "true"};
     return createElement("li", taskText, classes, attrs);
 }
 
+
 /* function creates a new element */
-
-
 function createElement(tagName, text=" ", classes = [], attributes = {}) {
     const element = document.createElement(tagName);
     
@@ -188,18 +215,16 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
   }
 
 
-
    function updateStorage(){
     localStorage.setItem("tasks", JSON.stringify(tasksStorage));
   }
   
-
-
+/* generates ID based on how many tasks exists */
   function generateId(){
     let count = 0;
     try{
-    for(let arr in tasksStorage){       // iterate through object properties
-        for(let i = 0; i < tasksStorage[arr].length; i++){       // in each array
+    for(let taskArr in tasksStorage){       // iterate through object properties
+        for(let i = 0; i < tasksStorage[taskArr].length; i++){       // in each array
             count++;
         }
     }
@@ -207,7 +232,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
     return count;
 
     }
-    catch{
+    catch{          // if the arrays are empty
     return count;
     }
     
@@ -215,58 +240,40 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
           
       
     
-function displayFromStorage(){
-    let count = 0;
-        for(let i = 0; i < tasksStorage.todo.length; i++){       // in each array
-              todo.append(createTaskElement(count, tasksStorage.todo[i]));
-              count++;
-          }
-
-         for(let i = 0; i < tasksStorage["in-progress"].length; i++){       // in each array
-            progress.append(createTaskElement(count, tasksStorage["in-progress"][i]));
-            count++; 
-        }
-
-        for(let i = 0; i < tasksStorage.done.length; i++){       // in each array
-            done.append(createTaskElement(count, tasksStorage.done[i]));
-            count++;
-        }
-      }
 
       /* gets a ul list ID and returning the right array name from tasksStorage */
-      function parentList(str){
-        switch(str){
-            case "toDoList":
-              return "todo"
+    function parentList(listId){
+    switch(listId){
+        case "toDoList":
+            return "todo"
                 
-            case "progressList":
-               return "in-progress"
+        case "progressList":
+            return "in-progress"
                 
-            case "doneList":
-               return "done"
+        case "doneList":
+            return "done"
 
-            default:
-            console.log("There Seems To Be A Problem");
+        default:
+        console.log("There Seems To Be A Problem");
            }
       }
   
 
 
                 /* event listeners with event delegation */
-    const container = document.getElementById("container");
 
-          container.addEventListener("click", handleAddTaskEvent);
+        container.addEventListener("click", handleAddTaskEvent);
 
-          document.addEventListener('focus', getOriginalText, true);
-          document.addEventListener('blur', handleTaskContentEdit, true);
+        document.addEventListener('focus', getOriginalText, true);
 
-
+        document.addEventListener('blur', handleTaskContentEdit, true);
 
 
-                 /* ---- moving Tasks with keyboard ---- */
+
+
+        /* ---- moving Tasks with keyboard ---- */
           
 
- 
             /*  called from keydown event */
 
     function moveToList(event){
@@ -337,38 +344,58 @@ function displayFromStorage(){
           
          
                     /* called from keyup event */
-            function settingPressedKeys(event){
+        function settingPressedKeys(event){
 
-            if (event.key === "Alt") {
-              pressedKeys.Alt = false;
-            }
-            if (event.key === "1") {
-              pressedKeys["1"] = false;
-            }
-            if (event.key === "2") {
-                pressedKeys["2"] = false;
-            }
-            if (event.key === "3") {
-                pressedKeys["3"] = false;
-            }
-              return;
+        if (event.key === "Alt") {
+            pressedKeys.Alt = false;
         }
+        if (event.key === "1") {
+            pressedKeys["1"] = false;
+        }
+        if (event.key === "2") {
+            pressedKeys["2"] = false;
+        }
+        if (event.key === "3") {
+            pressedKeys["3"] = false;
+        }
+            return;
+    }
          
                             /*  detecting mouse hovering */
-        document.addEventListener(("mouseover"), function(event) {
-            if(event.target.tagName==="LI"){        // if the mouse hovers a task allow it to change location
-                chosenTask = event.target;              
-                document.addEventListener("keydown", moveToList);
-                document.addEventListener("keyup", settingPressedKeys);
+
+document.addEventListener(("mouseover"), function(event) {
+        if(event.target.tagName==="LI"){        // if the mouse hovers a task allow it to change location
+            chosenTask = event.target;              
+            document.addEventListener("keydown", moveToList);
+            document.addEventListener("keyup", settingPressedKeys);
+        }
+        else {
+            chosenTask = undefined;
+            document.removeEventListener("keyup", settingPressedKeys);
+            document.removeEventListener("keydown", moveToList);
+        }
+
+        return; 
+        }, true); 
+
+                
+    /* ---- searching tasks ---- */
+
+    searchBar.addEventListener("keyup", (e)=>{              // when the searched value changes
+        const searchValue = e.target.value.toLowerCase();   // gets the value in lower case
+        const filteredTasks = tasksArr.filter(task =>{      // gets the tasks that supposed to show
+            return task.toLowerCase().includes(searchValue);    
+            });
+
+    let arr = document.getElementsByTagName("li");       // gets all tasks on the page
+        for(let i = 0; i < arr.length; i++){
+            arr[i].style.display = "none";                     // hides them
+                for(let j = 0; j < filteredTasks.length; j++){
+                    if(arr[i].innerHTML===filteredTasks[j])         // if theyre text contain a value that supposed to show
+                        arr[i].style.display = "list-item";         // show them
+                }
             }
-            else {
-                chosenTask = undefined;
-                document.removeEventListener("keyup", settingPressedKeys);
-                document.removeEventListener("keydown", moveToList);
-            }
-            return; 
+               
+        })
+
         
-            }, true); 
-
-
-            
