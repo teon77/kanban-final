@@ -4,18 +4,30 @@
 let inputtedText, list, originalText, chosenTask, removedTask, currentList, newList,
  pressedKeys = {
     Alt: false,
+    Delete: false,
     "1": false,
     "2": false,
-    "3": false,
+    "3": false
   };
 
   /* ul lists from DOM */
-const todo = document.getElementById("toDoList");
-const progress = document.getElementById("progressList");
-const done = document.getElementById("doneList");
+const todolistElement = document.getElementById("toDoList");
+const progressListElement = document.getElementById("progressList");
+const doneListElement = document.getElementById("doneList");
+
 const container = document.getElementById("container");
+
 const searchBar = document.getElementById("search");  
-let tasksArr = [];
+const saveButton = document.getElementById("saveBtn");
+const loadButton = document.getElementById("loadBtn");
+const clearButton = document.getElementById("clearBtn");
+
+// clearDoListBtn clearProgressListBtn  clearDoneListBtn
+const clearToDoListBtn = document.getElementById("clearToDoList");
+const clearProgressListBtn = document.getElementById("clearProgressList");
+const clearDoneListBtn = document.getElementById("clearDoneList");
+
+let tasksArr = []; // used in search
 
 
             /* Object to manipulate local storage*/
@@ -35,22 +47,23 @@ function initialFromLocalStorage(){
 
  function displayFromStorage(){
     let count = 0;
+       
         for(let i = 0; i < tasksStorage.todo.length; i++){       // in each array
-              tasksArr.push(tasksStorage.todo[i]);          // use in searchBar
-              todo.append(createTaskElement(count, tasksStorage.todo[i]));
-              count++;
-          }
+            tasksArr.push(tasksStorage.todo[i]);          // use in searchBar
+              todolistElement.append(createTaskElement(count, tasksStorage.todo[i]));
+                count++;
+        }
 
          for(let i = 0; i < tasksStorage["in-progress"].length; i++){       // in each array
             tasksArr.push(tasksStorage["in-progress"][i]);      // use in searchBar
-            progress.append(createTaskElement(count, tasksStorage["in-progress"][i]));
-            count++; 
+              progressListElement.append(createTaskElement(count, tasksStorage["in-progress"][i]));
+                count++; 
         }
 
         for(let i = 0; i < tasksStorage.done.length; i++){       // in each array
             tasksArr.push(tasksStorage.done[i]);    // use in searchBar
-            done.append(createTaskElement(count, tasksStorage.done[i]));
-            count++;
+              doneListElement.append(createTaskElement(count, tasksStorage.done[i]));
+                count++;
         }
       }
 
@@ -113,51 +126,69 @@ function handleTaskContentEdit(e){
 }
 
 
-        /* handle button clicks with event delegation */
+        /* handle add button clicks with event delegation */
 
 function handleAddTaskEvent(e) {
-    
+let inputElement;
     if(e.target.id === "submit-add-to-do"){
 
                         /* Getting and checking input */
-        inputtedText = document.getElementById("add-to-do-task").value;
-        tasksArr.push(inputtedText);
+        inputElement = document.getElementById("add-to-do-task");
+        inputtedText = inputElement.value;
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
-                            /*Getting the right list */
-             list = document.querySelector(".to-do-tasks");
+
+        tasksArr.push(inputtedText);
+        inputElement.value = "";
+
+                        /*Getting the right list */
+            list = document.querySelector(".to-do-tasks");
 
         const newId = generateId();
         addTask( newId, inputtedText, list);      // adding task with the right list and text
+        return;
         }
 
 
-    if(e.target.id === "submit-add-in-progress"){
+    else if(e.target.id === "submit-add-in-progress"){
 
                           /* Getting and checking input */
-        inputtedText = document.getElementById("add-in-progress-task").value;
-        tasksArr.push(inputtedText);
+        inputElement = document.getElementById("add-in-progress-task")       
+        inputtedText = inputElement.value;
         if(inputtedText===""){ alert("please insert Some text"); return;}
+
+
+        tasksArr.push(inputtedText);
+        inputElement.value = "";
 
                      /*Getting the right list */
             list = document.querySelector(".in-progress-tasks");
         const newId = generateId();
         addTask(newId, inputtedText, list);       // adding task with the right list and text
+        return;
         }
 
 
-    if(e.target.id === "submit-add-done"){
+   else if(e.target.id === "submit-add-done"){
                       /* Getting and checking input */
-        inputtedText = document.getElementById("add-done-task").value;
-        tasksArr.push(inputtedText);
+        inputElement = document.getElementById("add-done-task");
+        inputtedText = inputElement.value;
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
+        
+        tasksArr.push(inputtedText);
+        inputElement.value = "";
+        
                      /*Getting the right list */
          list = document.querySelector(".done-tasks");
         const newId = generateId();
         addTask( newId, inputtedText, list);       // adding task with the right list and text
+        return;
         }
- return;
+        else {
+            return;
+        }
+
 }
 
 
@@ -240,7 +271,6 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
           
       
     
-
       /* gets a ul list ID and returning the right array name from tasksStorage */
     function parentList(listId){
     switch(listId){
@@ -259,21 +289,52 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
       }
   
 
+      function deleteList(event){
+          /* checking which key is pressed */
+        if (event.key === "Alt") {
+            pressedKeys.Alt = true;
+        }
+        if (event.key === "Delete") {
+            pressedKeys.Delete = true;
+        }
+        if (event.key === "1") {
+            pressedKeys["1"] = true;
+        }
+        if (event.key === "2") {
+              pressedKeys["2"] = true;
+        }
+        if (event.key === "3") {
+              pressedKeys["3"] = true;
+        }
 
-                /* event listeners with event delegation */
+            /* deleting accordingly */
+        if (pressedKeys.Alt && pressedKeys.Delete && pressedKeys["1"]) {
+            clearTodoList();
+        }
+        if (pressedKeys.Alt && pressedKeys.Delete && pressedKeys["2"]) {
+            clearProgressList();
+        }
+        if (pressedKeys.Alt && pressedKeys.Delete && pressedKeys["3"]) {
+            clearDoneList();
+        }
+      }
 
-        container.addEventListener("click", handleAddTaskEvent);
+                /* Delete task on hover with Delete key */
+    function deleteTask(event){
+        if (event.key === "Delete") {
+            
+            currentList = parentList(chosenTask.parentElement.id);   // understand from which list an element is moving
+            taskContent = chosenTask.textContent;
 
-        document.addEventListener('focus', getOriginalText, true);
-
-        document.addEventListener('blur', handleTaskContentEdit, true);
-
-
-
+            tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
+            chosenTask.remove();
+            updateStorage();
+            
+        }    
+    } 
 
         /* ---- moving Tasks with keyboard ---- */
           
-
             /*  called from keydown event */
 
     function moveToList(event){
@@ -302,8 +363,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
             removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
             tasksStorage.todo.unshift(removedTask[0]);
 
-
-            todo.prepend(chosenTask);    //  replacing in DOM
+            todolistElement.prepend(chosenTask);    //  replacing in DOM
             updateStorage();
             return;
           }
@@ -318,8 +378,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
             removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
             tasksStorage["in-progress"].unshift(removedTask[0]);
 
-
-            progress.prepend(chosenTask);  //  replacing in DOM
+            progressListElement.prepend(chosenTask);  //  replacing in DOM
             updateStorage(); 
             return;
           }
@@ -334,20 +393,20 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
             removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
             tasksStorage.done.unshift(removedTask[0]);
             
-                
-            done.prepend(chosenTask);  //  replacing in DOM
+            doneListElement.prepend(chosenTask);  //  replacing in DOM
             updateStorage()
             return;
           }
         }
           
           
-         
-                    /* called from keyup event */
+            /* called from keyup event */
         function settingPressedKeys(event){
-
         if (event.key === "Alt") {
             pressedKeys.Alt = false;
+        }
+        if (event.key === "Delete"){
+            pressedKeys.Delete = false;
         }
         if (event.key === "1") {
             pressedKeys["1"] = false;
@@ -358,20 +417,22 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
         if (event.key === "3") {
             pressedKeys["3"] = false;
         }
-            return;
+        
     }
          
+    
                             /*  detecting mouse hovering */
-
 document.addEventListener(("mouseover"), function(event) {
         if(event.target.tagName==="LI"){        // if the mouse hovers a task allow it to change location
             chosenTask = event.target;              
             document.addEventListener("keydown", moveToList);
-            document.addEventListener("keyup", settingPressedKeys);
+            document.addEventListener("keydown", deleteTask);
+            
+            
         }
         else {
             chosenTask = undefined;
-            document.removeEventListener("keyup", settingPressedKeys);
+            document.removeEventListener("keydown", deleteTask);
             document.removeEventListener("keydown", moveToList);
         }
 
@@ -381,21 +442,108 @@ document.addEventListener(("mouseover"), function(event) {
                 
     /* ---- searching tasks ---- */
 
-    searchBar.addEventListener("keyup", (e)=>{              // when the searched value changes
-        const searchValue = e.target.value.toLowerCase();   // gets the value in lower case
-        const filteredTasks = tasksArr.filter(task =>{      // gets the tasks that supposed to show
-            return task.toLowerCase().includes(searchValue);    
-            });
+searchBar.addEventListener("keyup", (e)=>{              // when the searched value changes
+    const searchValue = e.target.value.toLowerCase();   // gets the value in lower case
+    const filteredTasks = tasksArr.filter(task =>{      // gets the tasks that supposed to show
+        return task.toLowerCase().includes(searchValue);    
+        });
 
     let arr = document.getElementsByTagName("li");       // gets all tasks on the page
         for(let i = 0; i < arr.length; i++){
             arr[i].style.display = "none";                     // hides them
-                for(let j = 0; j < filteredTasks.length; j++){
+                for(let j = 0; j < filteredTasks.length; j++){      // iterate through values that supposed to show
                     if(arr[i].innerHTML===filteredTasks[j])         // if theyre text contain a value that supposed to show
                         arr[i].style.display = "list-item";         // show them
                 }
-            }
+        }
                
-        })
+})
 
-        
+async function loadFromAPI(){ 
+    clearAllData();
+    const request = await fetch("https://json-bins.herokuapp.com/bin/614ad96f4021ac0e6c080c0f");
+        const data = await request.json();
+        tasksStorage = data.tasks;
+
+updateStorage();
+displayFromStorage();
+
+}
+
+
+async function saveToAPI(){
+   
+      const response = await fetch("https://json-bins.herokuapp.com/bin/614ad96f4021ac0e6c080c0f", {
+          method: "PUT",
+          headers:{
+            'Content-Type':'application/json'
+            },
+          body: JSON.stringify({tasks:{todo:[...tasksStorage.todo], "in-progress": [...tasksStorage["in-progress"]], done:[...tasksStorage.done]}})
+      
+        }).catch(error =>{
+            alert("There seems to be a problem");
+            console.log(error);
+        }); 
+        if(response.status === 200){
+            alert("You Saved Successfully To The API");
+        }
+}
+
+/* clears from DOM and local storage */
+ function clearAllData(){
+
+    clearTodoList();
+    clearProgressList();
+    clearDoneList();
+}
+
+
+function clearTodoList(){
+   
+    tasksStorage.todo = [];
+    updateStorage();
+         /* removing from DOM */
+    while(todolistElement.firstChild) todolistElement.removeChild(todolistElement.firstChild);
+}
+
+function clearProgressList(){
+   
+    tasksStorage["in-progress"] = [];
+    updateStorage();
+            /* removing from DOM */
+    while(progressListElement.firstChild) progressListElement.removeChild(progressListElement.firstChild);
+}
+
+function clearDoneList(){
+   
+    tasksStorage.done = [];
+    updateStorage();
+                /* removing from DOM */
+    while(doneListElement.firstChild) doneListElement.removeChild(doneListElement.firstChild);
+}
+
+
+/* ---- event listeners ---- */
+container.addEventListener("click", handleAddTaskEvent); // add task with event delegation
+    
+document.addEventListener('focus', getOriginalText, true); // for changing text
+
+document.addEventListener('blur', handleTaskContentEdit, true); // for changing text
+
+document.addEventListener("keydown", deleteList)
+
+document.addEventListener("keyup", settingPressedKeys);  // for moving and deleting tasks
+
+
+saveButton.addEventListener("click", saveToAPI);    // save button
+
+loadButton.addEventListener("click", loadFromAPI);  // load button
+
+clearButton.addEventListener("click", clearAllData);    // clear all button
+
+    /* clear List Buttons */
+clearToDoListBtn.addEventListener("click", clearTodoList)
+
+clearProgressListBtn.addEventListener("click",clearProgressList)
+
+clearDoneListBtn.addEventListener("click", clearDoneList)  

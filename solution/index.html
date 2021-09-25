@@ -11,37 +11,51 @@
   <body>
     <h1 id="page-title">Task Manager</h1>
     <br />
-    <input type="text" id="search" placeholder="Search Here" />
+    <div id="upperContainer">
+      <input type="text" id="search" placeholder="Search Here" />
+      <button id="saveBtn">Save</button>
+      <button id="loadBtn">Load</button>
+      <button id="clearBtn">Clear All</button>
+    </div>
     <div id="container">
       <section id="do-section" class="sections">
-        To DO
+        <h3>To Do</h3>
         <ul
           id="toDoList"
           class="to-do-tasks"
           style="list-style-type: none"
         ></ul>
-        <input type="text" id="add-to-do-task" placeholder="Add To-Do Task" />
-        <button id="submit-add-to-do">Add</button>
+        <div class="bottom">
+          <input type="text" id="add-to-do-task" placeholder="Add To-Do Task" />
+          <button id="submit-add-to-do">Add</button>
+          <button id="clearToDoList">Clear List</button>
+        </div>
       </section>
       <section id="progress-section" class="sections">
-        In Progress
+        <h3>In Progress</h3>
         <ul
           id="progressList"
           class="in-progress-tasks"
           style="list-style-type: none"
         ></ul>
-        <input
-          type="text"
-          id="add-in-progress-task"
-          placeholder="Add In-Progress Task"
-        />
-        <button id="submit-add-in-progress">Add</button>
+        <div class="bottom">
+          <input
+            type="text"
+            id="add-in-progress-task"
+            placeholder="Add In-Progress Task"
+          />
+          <button id="submit-add-in-progress">Add</button>
+          <button id="clearProgressList">Clear List</button>
+        </div>
       </section>
       <section id="done-section" class="sections">
-        Done
+        <h3>Done</h3>
         <ul id="doneList" class="done-tasks" style="list-style-type: none"></ul>
-        <input type="text" id="add-done-task" placeholder="Add Done Task" />
-        <button id="submit-add-done">Add</button>
+        <div class="bottom">
+          <input type="text" id="add-done-task" placeholder="Add Done Task" />
+          <button id="submit-add-done">Add</button>
+          <button id="clearDoneList">Clear List</button>
+        </div>
       </section>
     </div>
   </body>
