@@ -22,10 +22,12 @@ const saveButton = document.getElementById("saveBtn");
 const loadButton = document.getElementById("loadBtn");
 const clearButton = document.getElementById("clearBtn");
 
-// clearDoListBtn clearProgressListBtn  clearDoneListBtn
+
 const clearToDoListBtn = document.getElementById("clearToDoList");
 const clearProgressListBtn = document.getElementById("clearProgressList");
 const clearDoneListBtn = document.getElementById("clearDoneList");
+
+const dragToLists = document.querySelectorAll("ul"); // use for drag and drop
 
 let tasksArr = []; // used in search
 
@@ -33,11 +35,9 @@ let tasksArr = []; // used in search
             /* Object to manipulate local storage*/
 let tasksStorage = JSON.parse(localStorage.getItem("tasks"));
 
-    /* The function to start the show */
-initialFromLocalStorage();
-
+   
 function initialFromLocalStorage(){
-    if(tasksStorage!==null)
+    if(tasksStorage)
         displayFromStorage();
     else {
         setStorageArrays();
@@ -146,6 +146,16 @@ let inputElement;
 
         const newId = generateId();
         addTask( newId, inputtedText, list);      // adding task with the right list and text
+
+        document.getElementById(`${newId}`).animate([                 // animation
+            // keyframes
+            { transform: `translateY(${((list.clientHeight)/10)}vh)` },     // understanding list length
+            { transform: 'translateY(0vh)' }
+          ], {
+            // timing options
+            duration: 1000,
+            iterations: 1
+          });
         return;
         }
 
@@ -165,6 +175,16 @@ let inputElement;
             list = document.querySelector(".in-progress-tasks");
         const newId = generateId();
         addTask(newId, inputtedText, list);       // adding task with the right list and text
+
+        document.getElementById(`${newId}`).animate([                 // animation
+            // keyframes
+            { transform: `translateY(${((list.clientHeight)/10)}vh)` },     // understanding list length
+            { transform: 'translateY(0vh)' }
+          ], {
+            // timing options
+            duration: 1000,
+            iterations: 1
+          });
         return;
         }
 
@@ -183,12 +203,24 @@ let inputElement;
          list = document.querySelector(".done-tasks");
         const newId = generateId();
         addTask( newId, inputtedText, list);       // adding task with the right list and text
+
+        document.getElementById(`${newId}`).animate([                 // animation
+            // keyframes
+            { transform: `translateY(${((list.clientHeight)/10)}vh)` },     // understanding list length
+            { transform: 'translateY(0vh)' }
+          ], {
+            // timing options
+            duration: 1000,
+            iterations: 1
+          });
         return;
         }
+
         else {
             return;
         }
 
+        
 }
 
 
@@ -221,7 +253,7 @@ function addTask(id, userText, list) {
 
 function createTaskElement(id, taskText){
     const classes = ["task"];
-    const attrs = {id: id, contenteditable: "true"};
+    const attrs = {id: id, contenteditable: "true", draggable: "true"};
     return createElement("li", taskText, classes, attrs);
 }
 
@@ -245,7 +277,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
     return element;
   }
 
-
+        /* set local storage item to equal tasksStorage Object */
    function updateStorage(){
     localStorage.setItem("tasks", JSON.stringify(tasksStorage));
   }
@@ -254,10 +286,8 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
   function generateId(){
     let count = 0;
     try{
-    for(let taskArr in tasksStorage){       // iterate through object properties
-        for(let i = 0; i < tasksStorage[taskArr].length; i++){       // in each array
-            count++;
-        }
+    for(let taskArr in tasksStorage){       // iterate through object properties  
+        count += tasksStorage[taskArr].length;
     }
     if(document.getElementById(`${count}`)!==null) return count +1;
     return count;
@@ -322,7 +352,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
                 /* Delete task on hover with Delete key */
     function deleteTask(event){
         if (event.key === "Delete") {
-            
+
             currentList = parentList(chosenTask.parentElement.id);   // understand from which list an element is moving
             taskContent = chosenTask.textContent;
 
@@ -461,13 +491,18 @@ searchBar.addEventListener("keyup", (e)=>{              // when the searched val
 
 async function loadFromAPI(){ 
     clearAllData();
-    const request = await fetch("https://json-bins.herokuapp.com/bin/614ad96f4021ac0e6c080c0f");
-        const data = await request.json();
-        tasksStorage = data.tasks;
 
+    const loader = createElement("div", " ", ["loader"]);
+    document.body.prepend(loader);
+    
+    const request = await fetch("https://json-bins.herokuapp.com/bin/614ad96f4021ac0e6c080c0f");
+    const data = await request.json();
+    tasksStorage = data.tasks;
+
+    
 updateStorage();
 displayFromStorage();
-
+if(data.tasks !== undefined) loader.remove();
 }
 
 
@@ -476,7 +511,8 @@ async function saveToAPI(){
       const response = await fetch("https://json-bins.herokuapp.com/bin/614ad96f4021ac0e6c080c0f", {
           method: "PUT",
           headers:{
-            'Content-Type':'application/json'
+            'Content-Type':'application/json',
+            Accept: "application/json"
             },
           body: JSON.stringify({tasks:{todo:[...tasksStorage.todo], "in-progress": [...tasksStorage["in-progress"]], done:[...tasksStorage.done]}})
       
@@ -489,17 +525,28 @@ async function saveToAPI(){
         }
 }
 
+
+function deleteConfirmation(){
+    if(confirm("Proceeding will delete tasks from the screen and the local storage, Are You Sure ? "))
+    clearAllData();
+
+    else alert("That Was Close ...")
+       
+    
+}
+
 /* clears from DOM and local storage */
  function clearAllData(){
-
+   
     clearTodoList();
     clearProgressList();
     clearDoneList();
+    
 }
 
 
 function clearTodoList(){
-   
+    
     tasksStorage.todo = [];
     updateStorage();
          /* removing from DOM */
@@ -539,7 +586,7 @@ saveButton.addEventListener("click", saveToAPI);    // save button
 
 loadButton.addEventListener("click", loadFromAPI);  // load button
 
-clearButton.addEventListener("click", clearAllData);    // clear all button
+clearButton.addEventListener("click", deleteConfirmation);    // clear all button
 
     /* clear List Buttons */
 clearToDoListBtn.addEventListener("click", clearTodoList)
@@ -547,3 +594,7 @@ clearToDoListBtn.addEventListener("click", clearTodoList)
 clearProgressListBtn.addEventListener("click",clearProgressList)
 
 clearDoneListBtn.addEventListener("click", clearDoneList)  
+
+ /* The function to start the show */
+ initialFromLocalStorage();
+
