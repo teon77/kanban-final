@@ -4,6 +4,7 @@ body {
 #container {
   display: flex;
   min-width: 80rem;
+  justify-content: center;
 }
 .sections {
   width: 25rem;
