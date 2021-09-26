@@ -10,6 +10,7 @@ Eithan Refaely Final
 Tasks Managing site with quick shortcuts and dragging options.
 
 keyBoard shorcuts to know:
+
 Alt + 1/2/3 - move task to different list.
 
 Alt + t - move task to the top of the list.
