@@ -38,6 +38,7 @@ h3 {
 }
 
 ul {
+  min-height: 25rem;
   list-style-type: none;
   margin-left: -2.5rem;
 }

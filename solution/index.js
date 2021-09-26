@@ -7,7 +7,8 @@ let inputtedText, list, originalText, chosenTask, removedTask, currentList, newL
     Delete: false,
     "1": false,
     "2": false,
-    "3": false
+    "3": false,
+    "t": false,
   };
 
   /* ul lists from DOM */
@@ -27,7 +28,7 @@ const clearToDoListBtn = document.getElementById("clearToDoList");
 const clearProgressListBtn = document.getElementById("clearProgressList");
 const clearDoneListBtn = document.getElementById("clearDoneList");
 
-const dragToLists = document.querySelectorAll("ul"); // use for drag and drop
+
 
 let tasksArr = []; // used in search
 
@@ -70,12 +71,12 @@ function initialFromLocalStorage(){
 
     /* called if local storage is empty */
 function setStorageArrays(){
-    localStorage.setItem("tasks",JSON.stringify({
+  window.localStorage.setItem("tasks",JSON.stringify({
         "todo": [],
         "in-progress": [],
         "done": []
       }));
-       tasksStorage = JSON.parse(localStorage.getItem("tasks"));
+       tasksStorage = JSON.parse(window.localStorage.getItem("tasks"));
  }
 
  /* use in edit task content. gets the text before change */
@@ -279,7 +280,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
 
         /* set local storage item to equal tasksStorage Object */
    function updateStorage(){
-    localStorage.setItem("tasks", JSON.stringify(tasksStorage));
+   window.localStorage.setItem("tasks", JSON.stringify(tasksStorage));
   }
   
 /* generates ID based on how many tasks exists */
@@ -319,7 +320,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
       }
   
 
-      function deleteList(event){
+      function listShortcuts(event){
           /* checking which key is pressed */
         if (event.key === "Alt") {
             pressedKeys.Alt = true;
@@ -336,8 +337,38 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
         if (event.key === "3") {
               pressedKeys["3"] = true;
         }
+        if (event.key === "t") {
+            pressedKeys["t"] = true;
+        }
 
-            /* deleting accordingly */
+
+        /* moving a task to top */
+        if(pressedKeys.Alt && pressedKeys.t) {
+           chosenTask.parentElement.prepend(chosenTask);
+
+           currentList = parentList(chosenTask.parentElement.id);   // understand from which list an element is moving
+           taskContent = chosenTask.textContent;
+
+           removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
+           tasksStorage[currentList].unshift(taskContent);
+
+           updateStorage();
+           chosenTask.animate([                 // animation
+            // keyframes
+            { transform: `translateX(1vh)` },     // understanding list length
+            { transform: 'translateX(0vh)' },
+            { transform: 'translateX(-1vh)' },
+            { transform: 'translateX(0vh)' }
+          ], {
+            // timing options
+            duration: 500,
+            iterations: 2
+          });
+        
+
+        }
+
+            /* deleting */
         if (pressedKeys.Alt && pressedKeys.Delete && pressedKeys["1"]) {
             clearTodoList();
         }
@@ -432,6 +463,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
           
             /* called from keyup event */
         function settingPressedKeys(event){
+
         if (event.key === "Alt") {
             pressedKeys.Alt = false;
         }
@@ -446,6 +478,9 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
         }
         if (event.key === "3") {
             pressedKeys["3"] = false;
+        }
+        if (event.key === "t") {
+            pressedKeys["t"] = false;
         }
         
     }
@@ -482,7 +517,7 @@ searchBar.addEventListener("keyup", (e)=>{              // when the searched val
         for(let i = 0; i < arr.length; i++){
             arr[i].style.display = "none";                     // hides them
                 for(let j = 0; j < filteredTasks.length; j++){      // iterate through values that supposed to show
-                    if(arr[i].innerHTML===filteredTasks[j])         // if theyre text contain a value that supposed to show
+                    if(arr[i].innerHTML===filteredTasks[j])         // if their text contain a value that supposed to show
                         arr[i].style.display = "list-item";         // show them
                 }
         }
@@ -499,11 +534,12 @@ async function loadFromAPI(){
     const data = await request.json();
     tasksStorage = data.tasks;
 
-    
+if(data.tasks !== undefined) loader.remove();
 updateStorage();
 displayFromStorage();
-if(data.tasks !== undefined) loader.remove();
+
 }
+
 
 
 async function saveToAPI(){
@@ -514,13 +550,13 @@ async function saveToAPI(){
             'Content-Type':'application/json',
             Accept: "application/json"
             },
-          body: JSON.stringify({tasks:{todo:[...tasksStorage.todo], "in-progress": [...tasksStorage["in-progress"]], done:[...tasksStorage.done]}})
+            body: JSON.stringify({tasks:{todo:[...tasksStorage.todo], "in-progress": [...tasksStorage["in-progress"]], done:[...tasksStorage.done]}})
       
         }).catch(error =>{
             alert("There seems to be a problem");
             console.log(error);
         }); 
-        if(response.status === 200){
+        if(response.status === 200 || response.status === 418){
             alert("You Saved Successfully To The API");
         }
 }
@@ -577,7 +613,7 @@ document.addEventListener('focus', getOriginalText, true); // for changing text
 
 document.addEventListener('blur', handleTaskContentEdit, true); // for changing text
 
-document.addEventListener("keydown", deleteList)
+document.addEventListener("keydown", listShortcuts)
 
 document.addEventListener("keyup", settingPressedKeys);  // for moving and deleting tasks
 
@@ -595,6 +631,45 @@ clearProgressListBtn.addEventListener("click",clearProgressList)
 
 clearDoneListBtn.addEventListener("click", clearDoneList)  
 
+
  /* The function to start the show */
  initialFromLocalStorage();
+ 
 
+
+ /* drag and drop */
+ const dropZones = document.querySelectorAll("ul"); // use for drag and drop
+
+
+ document.addEventListener("dragstart", (e) => { 
+    e.dataTransfer.setData("text/plain", e.target.id);
+     currentList =  parentList(e.target.parentElement.id);
+})
+
+// when task is over a list
+for(const drop of dropZones) {
+    drop.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        
+    })
+
+
+    // when task is dropped
+    drop.addEventListener("drop", (e) => {
+        e.preventDefault();
+
+        const droppedTaskId = e.dataTransfer.getData("text/plain");
+        const droppedTask = document.getElementById(droppedTaskId);
+
+        taskContent = droppedTask.textContent;
+        newList = parentList(drop.id);
+        
+
+        let indexa = tasksStorage[currentList].indexOf(taskContent)
+        removedTask = tasksStorage[currentList].splice(indexa, 1);
+        tasksStorage[newList].push(taskContent);
+
+        drop.append(droppedTask);
+        updateStorage();
+    })
+}
