@@ -9,6 +9,7 @@ let inputtedText, list, originalText, chosenTask, removedTask, currentList, newL
     "2": false,
     "3": false,
     "t": false,
+    "b": false
   };
 
   /* ul lists from DOM */
@@ -16,7 +17,7 @@ const todolistElement = document.getElementById("toDoList");
 const progressListElement = document.getElementById("progressList");
 const doneListElement = document.getElementById("doneList");
 
-const container = document.getElementById("container");
+const container = document.getElementById("container");     // section container
 
 const searchBar = document.getElementById("search");  
 const saveButton = document.getElementById("saveBtn");
@@ -38,16 +39,16 @@ let tasksStorage = JSON.parse(localStorage.getItem("tasks"));
 
    
 function initialFromLocalStorage(){
-    if(tasksStorage)
+    if(tasksStorage)            // if its not the first time youre here
         displayFromStorage();
     else {
-        setStorageArrays();
+        setStorageArrays();         // initialize
     }
  }
 
 
  function displayFromStorage(){
-    let count = 0;
+    let count = 0;          // for Id
        
         for(let i = 0; i < tasksStorage.todo.length; i++){       // in each array
             tasksArr.push(tasksStorage.todo[i]);          // use in searchBar
@@ -139,7 +140,7 @@ let inputElement;
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
 
-        tasksArr.push(inputtedText);
+        tasksArr.push(inputtedText);  // used in search
         inputElement.value = "";
 
                         /*Getting the right list */
@@ -169,7 +170,7 @@ let inputElement;
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
 
-        tasksArr.push(inputtedText);
+        tasksArr.push(inputtedText);  // used in search
         inputElement.value = "";
 
                      /*Getting the right list */
@@ -197,7 +198,7 @@ let inputElement;
         if(inputtedText===""){ alert("please insert Some text"); return;}
 
         
-        tasksArr.push(inputtedText);
+        tasksArr.push(inputtedText);  // used in search
         inputElement.value = "";
         
                      /*Getting the right list */
@@ -340,6 +341,9 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
         if (event.key === "t") {
             pressedKeys["t"] = true;
         }
+        if (event.key === "b") {
+            pressedKeys["b"] = true;
+        }
 
 
         /* moving a task to top */
@@ -355,7 +359,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
            updateStorage();
            chosenTask.animate([                 // animation
             // keyframes
-            { transform: `translateX(1vh)` },     // understanding list length
+            { transform: `translateX(1vh)` },     
             { transform: 'translateX(0vh)' },
             { transform: 'translateX(-1vh)' },
             { transform: 'translateX(0vh)' }
@@ -364,11 +368,33 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
             duration: 500,
             iterations: 2
           });
-        
-
         }
 
-            /* deleting */
+             /* moving a task to top */
+        if(pressedKeys.Alt && pressedKeys.b) {
+            chosenTask.parentElement.append(chosenTask);
+
+            currentList = parentList(chosenTask.parentElement.id);   // understand from which list an element is moving
+            taskContent = chosenTask.textContent;
+ 
+            removedTask = tasksStorage[currentList].splice(tasksStorage[currentList].indexOf(taskContent), 1);
+            tasksStorage[currentList].push(taskContent);
+
+            updateStorage();
+           chosenTask.animate([                 // animation
+            // keyframes
+            { transform: `translateX(1vh)` },     
+            { transform: 'translateX(0vh)' },
+            { transform: 'translateX(-1vh)' },
+            { transform: 'translateX(0vh)' }
+          ], {
+            // timing options
+            duration: 500,
+            iterations: 2
+          });
+        }
+
+                         /* deleting */
         if (pressedKeys.Alt && pressedKeys.Delete && pressedKeys["1"]) {
             clearTodoList();
         }
@@ -481,6 +507,9 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
         }
         if (event.key === "t") {
             pressedKeys["t"] = false;
+        }
+        if (event.key === "b") {
+            pressedKeys["b"] = false;
         }
         
     }
@@ -637,12 +666,12 @@ clearDoneListBtn.addEventListener("click", clearDoneList)
  
 
 
- /* drag and drop */
+ /* -- drag and drop -- */
  const dropZones = document.querySelectorAll("ul"); // use for drag and drop
 
 
  document.addEventListener("dragstart", (e) => { 
-    e.dataTransfer.setData("text/plain", e.target.id);
+    e.dataTransfer.setData("text/plain", e.target.id);   // dragged element id transferd
      currentList =  parentList(e.target.parentElement.id);
 })
 
@@ -664,12 +693,12 @@ for(const drop of dropZones) {
         taskContent = droppedTask.textContent;
         newList = parentList(drop.id);
         
-
-        let indexa = tasksStorage[currentList].indexOf(taskContent)
-        removedTask = tasksStorage[currentList].splice(indexa, 1);
+            /*updating in Local Storage */
+        let index = tasksStorage[currentList].indexOf(taskContent)
+        removedTask = tasksStorage[currentList].splice(index, 1);
         tasksStorage[newList].push(taskContent);
 
-        drop.append(droppedTask);
+        drop.append(droppedTask);       // update in DOM
         updateStorage();
     })
 }
