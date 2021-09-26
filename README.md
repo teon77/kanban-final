@@ -11,8 +11,11 @@ Tasks Managing site with quick shortcuts and dragging options.
 
 keyBoard shorcuts to know:
 Alt + 1/2/3 - move task to different list.
+
 Alt + t - move task to the top of the list.
+
 Alt + b - move task to the bottom of the list.
+
 Alt + Delete + 1/2/3 - clear all tasks from the list.
 
 All of the above updates both in DOM and local Storage
