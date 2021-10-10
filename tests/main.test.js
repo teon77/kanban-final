@@ -22,7 +22,7 @@ const searchInput = '#search'
 
 const pageTitle = '#page-title'
 
-const toDoTasksList = '.to-do-tasks'
+const toDoTasksList = '.todo-tasks'
 const inProgressTasksList = '.in-progress-tasks'
 const doneTasksList = '.done-tasks'
 

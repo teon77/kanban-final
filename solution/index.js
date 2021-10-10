@@ -46,6 +46,7 @@ function getTasks() {
     const validatesTasks = validateTasks(tasks);
   
     for (const [taskType, taskList] of Object.entries(validatesTasks)) {
+        console.log(taskType);
       const taskListElement = document.querySelector('.' + taskType + '-tasks');
   
       taskListElement.innerHTML = '';
@@ -57,7 +58,7 @@ function getTasks() {
     }
   }
 
-  function createTaskElement(taskText, taskId){
+  function createTaskElement(taskText){
     const classes = ["task"];
     const attrs = { contenteditable: "true", draggable: "true"};
     return createElement("li", taskText, classes, attrs);
@@ -229,8 +230,8 @@ async function loadFromApi() {
         alert (" You Cant Leave the Task Without Text");
         e.target.innerText = originalText;
         throw " You Cant Leave the Task Without Text";
-
     }
+
   }
 
 
