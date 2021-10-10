@@ -1,7 +1,7 @@
 
     /* Global Variables */
 
-let inputtedText, list, originalText, chosenTask, removedTask, currentList, newList,
+let inputtedText, list, originalText, chosenTask, removedTask, currentList, newList, tasksArr
  pressedKeys = {
     Alt: false,
     Delete: false,
@@ -12,7 +12,7 @@ let inputtedText, list, originalText, chosenTask, removedTask, currentList, newL
     "b": false
   };
 
-  /* ul lists from DOM */
+  /* ul lists from DOM *//*
 const todolistElement = document.getElementById("toDoList");
 const progressListElement = document.getElementById("progressList");
 const doneListElement = document.getElementById("doneList");
@@ -29,22 +29,64 @@ const clearToDoListBtn = document.getElementById("clearToDoList");
 const clearProgressListBtn = document.getElementById("clearProgressList");
 const clearDoneListBtn = document.getElementById("clearDoneList");
 
+*/
+const tasksStorage = getTasks();
+showTasks(tasks);
+  
 
-
-let tasksArr = []; // used in search
-
-
-            /* Object to manipulate local storage*/
-let tasksStorage = JSON.parse(localStorage.getItem("tasks"));
-
-   
-function initialFromLocalStorage(){
-    if(tasksStorage)            // if its not the first time youre here
-        displayFromStorage();
-    else {
-        setStorageArrays();         // initialize
+function getTasks() {
+    try {
+      const tasks = getFromStorage();
+      return validateTasks(tasks);
+    } catch (e) {
+      updateStorage({
+        todo: [],
+        'in-progress': [],
+        done: [],
+      });
+      return getTasks();
     }
- }
+  }
+    
+        /* called if local storage is empty */
+    const setStorageArrays = {
+        todo: [],
+        "in-progress": [],
+        done: []
+     };
+    
+
+    /* set local storage item to equal tasksStorage Object */
+    function updateStorage(tasksStorage){
+        localStorage.setItem("tasks", JSON.stringify(tasksStorage));
+    }
+    
+    function getFromStorage() {
+        return JSON.parse(localStorage.getItem("tasks"));
+    }
+
+          
+
+
+
+/* validating tasks */
+function validateTaskText(taskText = {}){
+    if(typeof taskText === "string" && taskText.length)
+        return taskText;
+
+    alert("please insert Some text");
+}
+
+
+function validateTasksArrays(tasksObject = {}) {
+    const taskTypes = typeof tasksObject === "object" ? Object.keys(tasksObject) : [];    // The arrays in tasksStorage 
+
+    if( !taskTypes.includes("todo") || !taskTypes.includes("in-proress") || !taskTypes.includes("done")) {
+        throw new Error("Invalid tasksStorage Object");
+    }
+
+    return tasksObject;
+}
 
 
  function displayFromStorage(){
@@ -69,17 +111,7 @@ function initialFromLocalStorage(){
         }
       }
 
-
-    /* called if local storage is empty */
-function setStorageArrays(){
-  window.localStorage.setItem("tasks",JSON.stringify({
-        "todo": [],
-        "in-progress": [],
-        "done": []
-      }));
-       tasksStorage = JSON.parse(window.localStorage.getItem("tasks"));
- }
-
+ 
  /* use in edit task content. gets the text before change */
  function getOriginalText(e){
     if(e.target.tagName!=="LI") return;
@@ -279,10 +311,7 @@ function createElement(tagName, text=" ", classes = [], attributes = {}) {
     return element;
   }
 
-        /* set local storage item to equal tasksStorage Object */
-   function updateStorage(){
-   window.localStorage.setItem("tasks", JSON.stringify(tasksStorage));
-  }
+       
   
 /* generates ID based on how many tasks exists */
   function generateId(){
