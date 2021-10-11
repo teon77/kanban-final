@@ -21,9 +21,15 @@
       <section id="do-section" class="sections">
         <h3>To Do</h3>
         <input type="text" id="add-to-do-task" placeholder="Add To-Do Task" />
-        <button id="submit-add-to-do">Add</button>
+        <button
+          id="submit-add-to-do"
+          data-type="todo"
+          class="add-todo-task submit-task"
+        >
+          Add
+        </button>
         <button id="clearToDoList">Clear List</button>
-        <ul id="toDoList" class="to-do-tasks"></ul>
+        <ul id="toDoList" class="todo-tasks"></ul>
       </section>
       <section id="progress-section" class="sections">
         <h3>In Progress</h3>
@@ -32,14 +38,26 @@
           id="add-in-progress-task"
           placeholder="Add In-Progress Task"
         />
-        <button id="submit-add-in-progress">Add</button>
+        <button
+          id="submit-add-in-progress"
+          data-type="in-progress"
+          class="add-in-progress-task submit-task"
+        >
+          Add
+        </button>
         <button id="clearProgressList">Clear List</button>
         <ul id="progressList" class="in-progress-tasks"></ul>
       </section>
       <section id="done-section" class="sections">
         <h3>Done</h3>
         <input type="text" id="add-done-task" placeholder="Add Done Task" />
-        <button id="submit-add-done">Add</button>
+        <button
+          id="submit-add-done"
+          data-type="done"
+          class="add-done-task submit-task"
+        >
+          Add
+        </button>
         <button id="clearDoneList">Clear List</button>
         <ul id="doneList" class="done-tasks"></ul>
       </section>
