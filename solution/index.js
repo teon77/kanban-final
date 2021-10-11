@@ -127,7 +127,7 @@ for (const button of submitButtons) {
 
 
 
-  const TASKS_API_URI = 'https://json-bins.herokuapp.com/bin/6162f1049e72744bcfc40980';
+  const TASKS_API_URL = 'https://json-bins.herokuapp.com/bin/6162f1049e72744bcfc40980';
 
   async function request(method = '', data = null) {
     const options = {
@@ -142,7 +142,7 @@ for (const button of submitButtons) {
       options.body = JSON.stringify(data);
     }
   
-    const response = await fetch(TASKS_API_URI, options);
+    const response = await fetch(TASKS_API_URL, options);
   
     return response.json();
   }
@@ -234,6 +234,49 @@ async function loadFromApi() {
 
   }
 
+  let x ,y;
+  function onMouseUpdate(e) {
+    x = e.pageX;
+    y = e.pageY;
+  }
+
+  function moveToList(event) {
+      
+    let elementMouseIsOver = document.elementFromPoint(x, y);
+
+    if(elementMouseIsOver.tagName !== "LI") return;
+    if(!event.altKey) return;
+
+    checkNewList(event.key, elementMouseIsOver)
+  
+  }
+
+
+  function replace(currentList, taskContent, newList, domListId, domElement){
+ 
+    document.getElementById(domListId).prepend(domElement); // replace in DOM
+
+    /* replace in localStorage */
+    let removedTask = tasksStorage[`${currentList}`].splice(tasksStorage[currentList].indexOf(taskContent), 1);
+    tasksStorage[newList].unshift(removedTask[0]);
+    updateStorage(tasksStorage);
+  }
+
+
+  function checkNewList(str, element) {
+    let currentListId = parentList(element.parentElement.id);   // understand from which list an element is moving
+      
+    if (str === "1") {
+        replace(currentListId, element.textContent, "todo", "toDoList", element);
+    }
+    if (str === "2") {
+        replace(currentListId, element.textContent, "in-progress", "progressList", element);
+    }
+    if (str === "3") {
+        replace(currentListId, element.textContent, "done", "doneList", element);
+    }
+    
+  }
 
   function animateOnEdit(task){
     task.animate([                 // animation
@@ -250,17 +293,11 @@ async function loadFromApi() {
     }
   
 
-  document.getElementById('saveBtn').addEventListener('click', saveToApi);
-  document.getElementById('loadBtn').addEventListener('click', loadFromApi);
-
-
-  document.addEventListener('focus', getOriginalText, true); // for changing tex
-  document.addEventListener('blur', handleTaskContentEdit, true); // for changing text
-
-
-  const searchBar = document.getElementById("search"); 
+  
 
   /* ---- searching tasks ---- */
+
+  const searchBar = document.getElementById("search"); 
 
 searchBar.addEventListener("keyup", (e)=>{              // when the searched value changes
     const searchValue = e.target.value.toLowerCase();   // gets the value in lower case
@@ -277,4 +314,12 @@ searchBar.addEventListener("keyup", (e)=>{              // when the searched val
                
 })
 
-  
+document.getElementById('saveBtn').addEventListener('click', saveToApi);
+document.getElementById('loadBtn').addEventListener('click', loadFromApi);
+
+
+document.addEventListener('focus', getOriginalText, true); // for changing tex
+document.addEventListener('blur', handleTaskContentEdit, true); // for changing text
+document.addEventListener("keydown", moveToList, true)
+document.addEventListener('mousemove', onMouseUpdate, false);
+
